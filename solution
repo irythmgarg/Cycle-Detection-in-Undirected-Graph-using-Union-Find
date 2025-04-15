@@ -1,0 +1,63 @@
+class Solution
+{
+public:
+    // Function to find the parent of a node with path compression
+    int findparent(int x, vector<int>& parent)
+    {
+        if (parent[x] == x)
+            return x;
+        return parent[x] = findparent(parent[x], parent);
+    }
+
+    // Function to union two sets using union by rank
+    void findunion(int x, int y, vector<int>& ranks, vector<int>& parent)
+    {
+        int xparent = findparent(x, parent);
+        int yparent = findparent(y, parent);
+        
+        if (xparent == yparent) return;  // Already in the same set
+
+        if (ranks[xparent] > ranks[yparent])
+        {
+            parent[yparent] = xparent;
+        }
+        else if (ranks[xparent] < ranks[yparent])
+        {
+            parent[xparent] = yparent;
+        }
+        else
+        {
+            parent[xparent] = yparent;
+            ranks[yparent]++;
+        }
+    }
+
+    // Main function to detect cycle in an undirected graph
+    int detectCycle(int V, vector<int> adj[])
+    {
+        vector<int> parent(V), ranks(V, 0);
+
+        // Initialize each node's parent to itself
+        for (int i = 0; i < V; i++)
+            parent[i] = i;
+
+        // Traverse all edges
+        for (int i = 0; i < V; i++)
+        {
+            for (auto a : adj[i])
+            {
+                if (i >= a) continue;  // Avoid processing the same edge twice
+
+                int xparent = findparent(a, parent);
+                int yparent = findparent(i, parent);
+
+                if (xparent == yparent)
+                    return true;  // Cycle detected
+
+                findunion(xparent, yparent, ranks, parent);  // Union the sets
+            }
+        }
+
+        return false;  // No cycles found
+    }
+};
